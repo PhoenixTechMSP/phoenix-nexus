@@ -216,7 +216,7 @@ export default function SAM() {
                   </div>)}
 
                 {error && <div className="error" data-testid="sam-error" style={{ marginTop: 8 }}>{error}</div>}
-                {msg && <div data-testid="sam-msg" style={{ marginTop: 8, fontSize: 13, color: '#166534' }}>{msg}</div>}
+                {msg && <div data-testid="sam-msg" style={{ marginTop: 8, fontSize: 13, color: 'var(--success-text)' }}>{msg}</div>}
               </>}
         </div>
       </div>

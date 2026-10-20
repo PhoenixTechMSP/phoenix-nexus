@@ -33,7 +33,7 @@ one container, one SQLite file.
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [Prerequisites](#prerequisites)
-- [Quick start (Docker)](#quick-start-docker)
+- [Get started](#get-started)
 - [Documentation](#documentation)
 - [Project layout](#project-layout)
 - [Roadmap](#roadmap)
@@ -113,30 +113,53 @@ See [PREREQUISITES.md](PREREQUISITES.md) for the complete list. Short version:
 
 ---
 
-## Quick start (Docker)
+## Get started
+
+Three ways, from the quickest to the most permanent. Docker is the one tested path for 2 and 3.
+
+### 1. Try the live demo (nothing to install)
+
+A public demo is linked in the repository's **About** box. The accounts and their password are shown on its login page.
+The data is fictional and reset every night, and file imports are disabled on it.
+
+### 2. Run it on your own machine
+
+With Docker (Docker Desktop on Windows or macOS, Docker Engine on Linux):
 
 ```bash
-unzip phoenix-nexus.zip && cd phoenix-nexus
-cp .env.example .env
-# Edit .env - at minimum, set a strong JWT_SECRET
-# (generate one with:  openssl rand -hex 32 )
-
-docker compose up -d --build
-docker compose logs -f
+docker run -d --name phoenix-nexus -p 8080:8080 -v phoenix-nexus-data:/data -e SEED_SAMPLE=1 ghcr.io/phoenixtechmsp/phoenix-nexus:2.0.0-alpha.1
+docker logs phoenix-nexus
 ```
 
-Create the first admin (local account, always available as a break-glass
-login even when SSO is configured):
+Open <http://localhost:8080>. The first start needs no configuration: a strong session secret is generated and kept in the data volume, and an administrator account is created.
+`docker logs` shows its email and password **once**. Remove `-e SEED_SAMPLE=1` to start empty instead of with fictional sample data.
+To choose the account yourself, add `-e ADMIN_EMAIL=you@example.org -e ADMIN_PASSWORD=<12 characters or more>`.
+
+Without Docker (Node.js 22, see [PREREQUISITES.md](PREREQUISITES.md)):
 
 ```bash
-docker exec -it phoenix-nexus node scripts/first-admin.js \
-  admin@company.local "StrongPassword123!" "System Admin"
+npm ci && npm run build
+npm run first-admin -- you@example.org 'a-long-password' 'Your Name'
+JWT_SECRET=$(openssl rand -hex 32) npm start
 ```
 
-Open <http://localhost:8080> (or `http://<server-ip>:8080` on the LAN).
+Use the same `JWT_SECRET` value every time you start the server, otherwise everyone is signed out.
 
-For production deployment, reverse proxy, SSO, backups and troubleshooting,
-read [INSTALL.md](INSTALL.md).
+On Windows without Docker, see [INSTALL-WINDOWS.md](INSTALL-WINDOWS.md) (less tested than the Docker path).
+
+### 3. Install it on your server
+
+A Linux server with Docker, and a domain name that points to it. HTTPS is automatic.
+
+```bash
+git clone https://github.com/PhoenixTechMSP/phoenix-nexus.git && cd phoenix-nexus/deploy
+cp .env.prod.example .env      # set DOMAIN and ACME_EMAIL
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml logs nexus
+```
+
+Updates: [UPGRADING.md](UPGRADING.md). Reverse proxy, SSO, backups and troubleshooting: [INSTALL.md](INSTALL.md).
+To build from the sources instead of pulling the image: `docker compose up -d --build` (see INSTALL.md).
 
 ---
 

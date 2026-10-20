@@ -9,7 +9,14 @@
   one transaction per migration, and a refusal to start on a database newer than the application. See `UPGRADING.md`.
 - **CI/CD** (`deploy/CICD.md`): `develop` deploys to UAT, `main` to production after manual approval, image published to
   ghcr.io, automatic rollback, smoke test after each deployment. Release workflow on version tags (`RELEASING.md`).
+- **Zero-configuration first start** (Docker): without `JWT_SECRET`, a strong secret is generated once and kept in the data volume;
+  on an empty database an administrator is created (`ADMIN_EMAIL` / `ADMIN_PASSWORD`, or a random password shown once in the logs);
+  `SEED_SAMPLE=1` loads fictional sample data without public accounts and never erases anything. Never changes an existing account.
+- `deploy/docker-compose.prod.yml` and `.env.prod.example`: install on your own server from the published image, automatic HTTPS,
+  no demo mode. README "Get started" with three paths (live demo, run locally, install on a server).
 ### Fixed
+- Dark mode: low-stock rows, error banners and the dashboard alert used fixed light backgrounds with light text (unreadable). They now use theme tokens
+  (`--warn-*`, `--error-*`, `--danger-text`, `--success-text`), checked at WCAG AA (4.5:1) in both themes by a test.
 - `multer` upgraded from 1.x to 2.x (1.x is deprecated and has published vulnerabilities in upload handling). Import behaviour is unchanged.
 - Upgrading from a very old database crashed at startup: SQLite refuses `ADD COLUMN ... UNIQUE` (`users.oid`). The column is now
   added first and a unique index created separately.

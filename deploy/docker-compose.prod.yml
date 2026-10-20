@@ -1,0 +1,60 @@
+# Installation sur VOTRE serveur : application + HTTPS automatique (Caddy). Aucune construction : l'image est tiree de ghcr.io.
+#
+#   1. Un serveur Linux avec Docker, et un nom de domaine qui pointe vers son adresse IP.
+#   2. cd deploy && cp .env.prod.example .env      (renseigner DOMAIN et ACME_EMAIL, au minimum)
+#   3. docker compose -f docker-compose.prod.yml up -d
+#   4. docker compose -f docker-compose.prod.yml logs nexus     (le mot de passe admin genere s'y trouve, affiche une seule fois)
+#
+# L'application n'est PAS publiee sur l'hote : seul Caddy (80/443) est joignable, ce qui rend sur TRUST_PROXY=1.
+services:
+  nexus:
+    image: ${NEXUS_IMAGE:-ghcr.io/phoenixtechmsp/phoenix-nexus:2.0.0-alpha.1}
+    container_name: phoenix-nexus
+    restart: unless-stopped
+    init: true
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - TZ=${TZ:-Europe/Brussels}
+      - TRUST_PROXY=1
+      - DB_PATH=/data/ptx.db
+      # Vide = un secret fort est genere au premier demarrage et conserve dans le volume de donnees.
+      - "JWT_SECRET=${JWT_SECRET:-}"
+      - "ADMIN_EMAIL=${ADMIN_EMAIL:-}"
+      - "ADMIN_PASSWORD=${ADMIN_PASSWORD:-}"
+      - SEED_SAMPLE=${SEED_SAMPLE:-0}
+      - SSO_ENABLED=${SSO_ENABLED:-false}
+      - SSO_TENANT_ID=${SSO_TENANT_ID:-}
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID:-}
+      - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET:-}
+      - SSO_REDIRECT_URI=${SSO_REDIRECT_URI:-}
+      - SSO_ALLOWED_DOMAINS=${SSO_ALLOWED_DOMAINS:-}
+      - SSO_DEFAULT_ROLE=${SSO_DEFAULT_ROLE:-pending}
+    volumes:
+      - nexus-data:/data
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: phoenix-nexus-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      - "DOMAIN=${DOMAIN:?DOMAIN est obligatoire (ex. nexus.votre-societe.be)}"
+      - "ACME_EMAIL=${ACME_EMAIL:?ACME_EMAIL est obligatoire}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      nexus:
+        condition: service_healthy
+
+volumes:
+  nexus-data:
+  caddy-data:
+  caddy-config:

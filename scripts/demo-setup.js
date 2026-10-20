@@ -12,19 +12,22 @@ import path from 'node:path';
 import bcrypt from 'bcryptjs';
 
 const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'ptx.db');
+// SAMPLE_ONLY=1 : donnees d'exemple pour un essai local (SEED_SAMPLE=1 du conteneur). Ni comptes publics, ni mot de passe de demo,
+// et JAMAIS d'effacement de la base : on ajoute seulement les donnees fictives (prefixe DEMO-), idempotent.
+const SAMPLE_ONLY = process.env.SAMPLE_ONLY === '1';
 const password = process.env.DEMO_PASSWORD || '';
-if (password.length < 8) {
+if (!SAMPLE_ONLY && password.length < 8) {
   console.error('[demo] DEMO_PASSWORD est obligatoire (8 caracteres minimum). Il est affiche publiquement : ne reutilise AUCUN mot de passe reel.');
   process.exit(1);
 }
 const adminEmail = process.env.ADMIN_EMAIL || '';
 const adminPassword = process.env.ADMIN_PASSWORD || '';
-if (adminEmail && adminPassword.length < 12) {
+if (!SAMPLE_ONLY && adminEmail && adminPassword.length < 12) {
   console.error('[demo] ADMIN_PASSWORD doit faire 12 caracteres minimum.');
   process.exit(1);
 }
 
-if (process.env.DEMO_RESET_ON_START === '1') {
+if (!SAMPLE_ONLY && process.env.DEMO_RESET_ON_START === '1') {
   for (const suffix of ['', '-wal', '-shm', '-journal']) fs.rmSync(DB_PATH + suffix, { force: true });
   console.log('[demo] base reinitialisee');
 }
@@ -39,9 +42,11 @@ await import('./seed-sam-demo.js');      // produits, droits, attributions SAM
 const upsertUser = db.prepare(`
   INSERT INTO users (email, password_hash, full_name, role, status, language) VALUES (?,?,?,?, 'active', 'en')
   ON CONFLICT(email) DO UPDATE SET password_hash = excluded.password_hash, role = excluded.role, status = 'active'`);
+if (!SAMPLE_ONLY) {
 const hash = bcrypt.hashSync(password, 10);
 for (const a of DEMO_ACCOUNTS) upsertUser.run(a.email, hash, a.full_name, a.role);
 if (adminEmail) upsertUser.run(adminEmail.toLowerCase(), bcrypt.hashSync(adminPassword, 10), 'Administrator', 'admin');
+}
 
 // ---- historique synthetique (28 jours) : sans lui Dashboard, Forecast et Logs seraient vides ----
 let events = 0;
@@ -53,7 +58,9 @@ if (db.prepare('SELECT COUNT(*) AS n FROM asset_events').get().n < 20) {
     SELECT a.id, a.category_id, a.department_id FROM assets a JOIN categories c ON c.id = a.category_id
     WHERE a.asset_code LIKE 'DEMO-%' AND c.consumable = 0 AND a.status IN ('available','in_use')`).all();
   const agents = db.prepare(`SELECT id FROM agents WHERE matricule LIKE 'DEMO-%'`).all();
-  const manager = db.prepare('SELECT id FROM users WHERE email = ?').get(DEMO_ACCOUNTS[0].email);
+  const manager = SAMPLE_ONLY
+    ? db.prepare("SELECT id FROM users WHERE role = 'admin' ORDER BY id LIMIT 1").get()
+    : db.prepare('SELECT id FROM users WHERE email = ?').get(DEMO_ACCOUNTS[0].email);
   const ins = db.prepare(`INSERT INTO asset_events (asset_id, agent_id, user_id, event_type, status_after, department_id, category_id, created_at)
                           VALUES (?,?,?,?,?,?,?,?)`);
   const fmt = d => d.toISOString().slice(0, 19).replace('T', ' ');

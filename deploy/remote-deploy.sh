@@ -6,7 +6,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 ARG="${1:?usage : remote-deploy.sh <image>|rollback}"
-COMPOSE=(docker compose -f docker-compose.demo.yml)
+# COMPOSE_FILE : docker-compose.demo.yml (instance de demonstration publique, defaut) ou docker-compose.prod.yml.
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.demo.yml}"
+[[ "$COMPOSE_FILE" =~ ^docker-compose\.(demo|prod)\.yml$ ]] || { echo "COMPOSE_FILE refuse : $COMPOSE_FILE" >&2; exit 2; }
+COMPOSE=(docker compose -f "$COMPOSE_FILE")
 
 if [ "$ARG" = "rollback" ]; then
   [ -s .previous-image ] || { echo "Aucune image precedente connue : rien a restaurer." >&2; exit 1; }

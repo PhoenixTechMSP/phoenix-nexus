@@ -110,7 +110,7 @@ export default function ImportWizard({ target = 'assets', title, defaults = {} }
             </label>
           )}
         </td>
-        <td style={{ fontSize: 12, color: '#475569' }}>
+        <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
           {spec.mode === 'column' && meta.preview[0] ? String(meta.preview[0][spec.column] ?? '') : ''}
         </td>
       </tr>
@@ -122,7 +122,7 @@ export default function ImportWizard({ target = 'assets', title, defaults = {} }
       <h2>{title}</h2>
       <input type="file" accept=".xlsx,.xls,.csv" onChange={pick} disabled={busy} />
       {busy && <p><small>{t('common.loading', 'Loading…')}</small></p>}
-      {error && <div style={{ background: '#fee2e2', padding: 8, borderRadius: 6, marginTop: 8 }}>{error}</div>}
+      {error && <div className="alert-error alert-box" style={{ marginTop: 8 }}>{error}</div>}
 
       {meta && mapping && (
         <>

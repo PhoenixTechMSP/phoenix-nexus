@@ -62,7 +62,7 @@ function Categories() {
           <button type="submit">{t('common.add')}</button>
         </form>
       </div>
-      {error && <div className="card" style={{ background: '#fee2e2' }}>{error}</div>}
+      {error && <div className="card alert-error">{error}</div>}
       <div className="card">
         <h2>{t('admin.categoriesTitle')} ({cats.length})</h2>
         <table>
@@ -84,7 +84,7 @@ function Categories() {
                   <input type="checkbox" checked={!!c.consumable} onChange={e => patch(c.id, { consumable: e.target.checked ? 1 : 0 })} />
                 </td>
                 <td>{c.asset_count}</td>
-                <td><button onClick={() => remove(c)} style={{ color: '#b91c1c' }}>{t('common.delete')}</button></td>
+                <td><button onClick={() => remove(c)} style={{ color: 'var(--danger-text)' }}>{t('common.delete')}</button></td>
               </tr>
             ))}
           </tbody>
@@ -128,7 +128,7 @@ function Departments() {
           <button type="submit">{t('common.add')}</button>
         </form>
       </div>
-      {error && <div className="card" style={{ background: '#fee2e2' }}>{error}</div>}
+      {error && <div className="card alert-error">{error}</div>}
       <div className="card">
         <h2>{t('admin.departmentsTitle')} ({depts.length})</h2>
         <table>
@@ -140,7 +140,7 @@ function Departments() {
                 <td>
                   <input defaultValue={d.name} onBlur={e => e.target.value !== d.name && patch(d.id, { name: e.target.value })} />
                 </td>
-                <td><button onClick={() => remove(d)} style={{ color: '#b91c1c' }}>{t('common.delete')}</button></td>
+                <td><button onClick={() => remove(d)} style={{ color: 'var(--danger-text)' }}>{t('common.delete')}</button></td>
               </tr>
             ))}
           </tbody>
@@ -212,7 +212,7 @@ function Users() {
         </form>
       </div>
 
-      {error && <div className="card" style={{ background: '#fee2e2' }}>{error}</div>}
+      {error && <div className="card alert-error">{error}</div>}
 
       <div className="card">
         <h2>{t('admin.usersTitle')} ({users.length})</h2>
@@ -250,7 +250,7 @@ function Users() {
                 <td>{u.oid ? '✓' : '-'}</td>
                 <td>
                   <button onClick={() => resetPwd(u)}>{t('admin.resetPassword')}</button>{' '}
-                  <button onClick={() => remove(u)} style={{ color: '#b91c1c' }}>{t('common.delete')}</button>
+                  <button onClick={() => remove(u)} style={{ color: 'var(--danger-text)' }}>{t('common.delete')}</button>
                 </td>
               </tr>
             ))}

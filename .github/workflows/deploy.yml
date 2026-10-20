@@ -52,7 +52,7 @@ jobs:
 
       - name: Send the deployment files (compose, proxy, script - never the .env)
         run: |
-          scp -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes deploy/docker-compose.demo.yml deploy/Caddyfile deploy/remote-deploy.sh "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/nexus/deploy/"
+          scp -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes deploy/docker-compose.demo.yml deploy/docker-compose.prod.yml deploy/Caddyfile deploy/remote-deploy.sh "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/nexus/deploy/"
 
       - name: Deploy the image (automatic rollback if the container is not healthy)
         env:

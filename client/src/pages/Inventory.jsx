@@ -140,7 +140,7 @@ export default function Inventory() {
           )}
         </div>
 
-        {error && <div className="card" style={{ background: '#fee2e2' }}>{error}</div>}
+        {error && <div className="card alert-error">{error}</div>}
 
         {showForm && canEdit && (
           <form onSubmit={create} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
@@ -177,7 +177,7 @@ export default function Inventory() {
           </thead>
           <tbody>
             {filtered.map(a => (
-              <tr key={a.id} style={a.consumable && a.quantity <= a.min_quantity ? { background: '#fef3c7' } : undefined}>
+              <tr key={a.id} className={a.consumable && a.quantity <= a.min_quantity ? 'row-warn' : undefined}>
                 <td><strong>{a.asset_code}</strong>{a.label ? <><br /><small>{a.label}</small></> : null}</td>
                 <td>{a.serial || '-'}</td>
                 <td>{a.category_name || '-'}</td>
@@ -203,7 +203,7 @@ export default function Inventory() {
                   <td style={{ whiteSpace: 'nowrap' }}>
                     <button onClick={() => openEdit(a)}>{t('common.edit')}</button>
                     {user?.role === 'admin' && (
-                      <button onClick={() => remove(a)} style={{ color: '#b91c1c', marginLeft: 6 }}>{t('common.delete')}</button>
+                      <button onClick={() => remove(a)} style={{ color: 'var(--danger-text)', marginLeft: 6 }}>{t('common.delete')}</button>
                     )}
                   </td>
                 )}
@@ -229,7 +229,7 @@ export default function Inventory() {
             style={{ maxWidth: 720, width: '100%' }}
           >
             <h3>{t('inventory.editTitle')} - {editing.asset_code}</h3>
-            {editError && <div style={{ background: '#fee2e2', padding: 8, borderRadius: 6, marginBottom: 8 }}>{editError}</div>}
+            {editError && <div className="alert-error alert-box" style={{ marginBottom: 8 }}>{editError}</div>}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               <input placeholder={t('inventory.code')} required value={editing.asset_code} onChange={e => setEditing({ ...editing, asset_code: e.target.value })} />
               <input placeholder={t('inventory.serial')} value={editing.serial} onChange={e => setEditing({ ...editing, serial: e.target.value })} />

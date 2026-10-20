@@ -13,6 +13,12 @@
   --header-link: #cbd5e1;
   --accent: #2563eb;
   --accent-text: #ffffff;
+  --warn-bg: #fef3c7;
+  --warn-text: #78350f;
+  --error-bg: #fee2e2;
+  --error-text: #7f1d1d;
+  --danger-text: #b91c1c;
+  --success-text: #166534;
   --danger: #ef4444;
   --shadow: 0 1px 3px rgba(0, 0, 0, .08);
   --login-bg: linear-gradient(135deg, #0f172a, #1e293b);
@@ -34,6 +40,12 @@
   --header-link: #b9b7b1;
   --accent: #fe7b02;
   --accent-text: #1b1b1b;
+  --warn-bg: #3a2a05;
+  --warn-text: #fde68a;
+  --error-bg: #3d1614;
+  --error-text: #f79c92;
+  --danger-text: #f79c92;
+  --success-text: #7ee2a8;
   --danger: #fe3f21;
   --shadow: 0 1px 3px rgba(0, 0, 0, .5);
   --login-bg: radial-gradient(circle at 20% 20%, #2a1a08, #101012 60%);
@@ -132,3 +144,9 @@ header .brand-mark { width: 32px; height: 32px; display: block; }
 [data-theme="dark"] .demo-banner { background: #3a2a05; color: #fde68a; border-bottom-color: #78530a; }
 .demo-box { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); display: grid; gap: 8px; font-size: 14px; }
 .demo-box p { margin: 0; color: var(--text-muted); }
+
+/* Etats d'alerte : les couleurs viennent du theme (un fond clair code en dur rendait le texte illisible en mode sombre) */
+.alert-warn { background: var(--warn-bg); color: var(--warn-text); }
+.alert-error { background: var(--error-bg); color: var(--error-text); }
+.alert-box { padding: 8px; border-radius: 6px; }
+tr.row-warn td { background: var(--warn-bg); color: var(--warn-text); }

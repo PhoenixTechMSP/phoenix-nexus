@@ -124,7 +124,7 @@ export default function Dashboard() {
       </div>
 
       {stats.lowStock.length > 0 && (
-        <div className="card" style={{ background: '#fef3c7' }}>
+        <div className="card alert-warn">
           <h3>{t('dashboard.lowStock')}</h3>
           <table>
             <thead><tr><th>{t('inventory.code')}</th><th>{t('inventory.category')}</th><th>{t('common.department')}</th><th>{t('inventory.stock')}</th></tr></thead>
