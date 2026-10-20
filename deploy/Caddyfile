@@ -1,0 +1,20 @@
+# Reverse proxy HTTPS automatique (Let's Encrypt). Aucune configuration de certificat a gerer.
+# Variables lues depuis deploy/.env : DOMAIN (ex. demo.phoenix-tech.be) et ACME_EMAIL (alertes d'expiration).
+{
+	email {$ACME_EMAIL}
+}
+
+(nexus) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	# Caddy REMPLACE X-Forwarded-For par l'adresse reelle du client (un client ne peut pas la falsifier) :
+	# c'est ce qui rend sur TRUST_PROXY=1 cote application (limiteur de tentatives de connexion par client).
+	reverse_proxy nexus:8080
+}
+
+{$DOMAIN} {
+	import nexus
+}

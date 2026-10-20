@@ -1,0 +1,57 @@
+# Instance de DEMONSTRATION publique : application + reverse proxy HTTPS automatique.
+#
+#   cd deploy && cp .env.demo.example .env   # puis remplir .env
+#   docker compose -f docker-compose.demo.yml up -d --build
+#
+# L'application n'est PAS publiee sur l'hote : seul Caddy (80/443) est joignable de l'exterieur.
+# C'est ce qui permet de faire confiance a X-Forwarded-For (TRUST_PROXY=1) sans qu'un client le falsifie.
+services:
+  nexus:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    # CI/CD : le serveur tire l'image construite et testee par GitHub Actions (NEXUS_IMAGE). En local : build depuis les sources.
+    image: ${NEXUS_IMAGE:-phoenix-nexus:local}
+    container_name: phoenix-nexus
+    restart: unless-stopped
+    init: true
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - TZ=Europe/Brussels
+      - TRUST_PROXY=1
+      - DB_PATH=/data/ptx.db
+      - "JWT_SECRET=${JWT_SECRET:?JWT_SECRET est obligatoire - generer avec openssl rand -hex 32}"
+      - DEMO_MODE=1
+      - DEMO_RESET_ON_START=1
+      - "DEMO_PASSWORD=${DEMO_PASSWORD:?DEMO_PASSWORD est obligatoire (il sera PUBLIC)}"
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+    volumes:
+      - nexus-data:/data
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: phoenix-nexus-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      - "DOMAIN=${DOMAIN:?DOMAIN est obligatoire (ex. demo.phoenix-tech.be)}"
+      - "ACME_EMAIL=${ACME_EMAIL:?ACME_EMAIL est obligatoire}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      nexus:
+        condition: service_healthy
+
+volumes:
+  nexus-data:
+  caddy-data:
+  caddy-config:

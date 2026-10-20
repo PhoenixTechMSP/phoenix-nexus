@@ -1,0 +1,47 @@
+{
+  "name": "phoenix-nexus",
+  "version": "2.0.0-alpha.1",
+  "private": true,
+  "description": "Self-hosted ITAM, CMDB and software asset management (SQLite + Express + React), with i18n and Entra ID SSO",
+  "license": "AGPL-3.0-only",
+  "author": "Phoenix Tech MSP",
+  "homepage": "https://github.com/PhoenixTechMSP/phoenix-nexus",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:server": "node --watch server/index.js",
+    "dev:client": "vite --config client/vite.config.js",
+    "build": "vite build --config client/vite.config.js",
+    "start": "NODE_ENV=production node server/index.js",
+    "first-admin": "node scripts/first-admin.js",
+    "test": "node --test \"server/test/*.test.js\"",
+    "test:e2e": "bash scripts/e2e/run.sh all",
+    "smoke": "node scripts/smoke.mjs",
+    "demo:setup": "node scripts/demo-setup.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.2.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.4.0",
+    "openid-client": "^5.7.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.2",
+    "html5-qrcode": "^2.3.8",
+    "i18next": "^23.15.1",
+    "i18next-browser-languagedetector": "^8.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.0.2",
+    "react-router-dom": "^6.26.2",
+    "recharts": "^2.12.7",
+    "vite": "^5.4.8"
+  }
+}

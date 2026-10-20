@@ -1,0 +1,69 @@
+# Deploiement d'une image deja construite et testee sur un serveur (UAT ou production). Appele par ci.yml.
+# Configuration dans GitHub : Settings > Environments > uat / production
+#   variables : DEPLOY_HOST, DEPLOY_USER, DEPLOY_URL (ex. https://demo.example.org)
+#   secrets   : DEPLOY_SSH_KEY (cle privee dediee), DEPLOY_KNOWN_HOSTS (sortie de ssh-keyscan, verifiee)
+# Sur "production", activer "Required reviewers" : le deploiement attend votre clic.
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      packages: read
+    env:
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_URL: ${{ vars.DEPLOY_URL }}
+      IMAGE: ${{ inputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Prepare SSH (host key pinned, no trust on first use)
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          test -n "$DEPLOY_HOST" && test -n "$DEPLOY_USER" && test -n "$DEPLOY_URL"
+
+      - name: Send the deployment files (compose, proxy, script - never the .env)
+        run: |
+          scp -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes deploy/docker-compose.demo.yml deploy/Caddyfile deploy/remote-deploy.sh "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/nexus/deploy/"
+
+      - name: Deploy the image (automatic rollback if the container is not healthy)
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s\n' "$GHCR_TOKEN" | ssh -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" "GHCR_USER='${GHCR_USER}' bash /opt/nexus/deploy/remote-deploy.sh '${IMAGE}'"
+
+      - name: Smoke test against the live URL
+        id: smoke
+        run: node scripts/smoke.mjs "$DEPLOY_URL"
+
+      - name: Roll back if the smoke test failed
+        if: failure() && steps.smoke.conclusion == 'failure'
+        run: ssh -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" "bash /opt/nexus/deploy/remote-deploy.sh rollback"

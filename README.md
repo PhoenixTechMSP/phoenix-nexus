@@ -1,0 +1,219 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="client/public/brand/phoenix-logo-on-dark.png">
+    <img src="client/public/brand/phoenix-logo.png" alt="Phoenix-Nexus logo" width="120">
+  </picture>
+</p>
+
+<h1 align="center">Phoenix-Nexus</h1>
+
+Self-hosted IT governance platform with three modules on one database:
+
+- **ITAM** - the asset lifecycle for a whole site: the **PTX fleet**, all **IT**
+  equipment (laptops, desktops, printers, phones, radios, network gear), all **OT**
+  equipment (PLCs, sensors, CCTV, conveyor / BHS) and **business equipment &
+  consumables** (vacuum cleaners, trolleys, tools, cloths, PPE, cleaning supplies).
+- **CMDB** - configuration items and their relationships, fed one way from the asset
+  lifecycle: an asset becomes a configuration item when it enters service and is
+  archived (never deleted) when it is retired.
+- **SAM** - software licence position (entitlements minus consumption), savings
+  identified, compliance exposure and renewals.
+
+Every asset is categorised (`IT` / `OT` / `BUSINESS`), optionally serialised,
+assigned to a department, and traceable: who took what, when, returned or not,
+in which state, plus repair follow-up and consumable stock levels.
+
+Designed to run **fully offline on your intranet** - no cloud dependency,
+one container, one SQLite file.
+
+---
+
+## Table of contents
+
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Quick start (Docker)](#quick-start-docker)
+- [Documentation](#documentation)
+- [Project layout](#project-layout)
+- [Roadmap](#roadmap)
+- [License](#license)
+
+---
+
+## Features
+
+- **Asset inventory (ITAM)**: one referential for PTX, IT, OT and business assets.
+  Categories are fully manageable in the UI (code, name, kind
+  `IT` / `OT` / `BUSINESS`, consumable flag).
+- **CMDB**: configuration items created by the asset lifecycle, relationships
+  between items (depends on / connected to), archive on retirement. Read-only for
+  `staff`, relationships editable by `manager` and `admin`.
+- **SAM**: software products, entitlements and assignments; the contract metric
+  (named user, device, core, subscription) decides what consumes a licence. Position
+  per product (compliant, oversized, limit reached, over-deployed, no entitlement),
+  KPIs and renewals within 90 days.
+- **Departments** managed in the UI - seeded with General, Operations,
+  Warehouse, Sales, HR, Cleaning, IT, Maintenance - create, rename
+  or delete your own.
+- **QR-code scanning** or manual entry / autocomplete on asset code, serial
+  number, IMEI or label (e.g. `PTX-0536 / 356966281334294`).
+- **Check-in / check-out** of serialised assets to agents, with autocomplete
+  on agents; the department follows the agent.
+- **Consumables**: stock quantity, minimum threshold, issue / restock
+  operations and a "to reorder" alert list.
+- **Asset statuses**: `available`, `in_use`, `defective`, `repair`, `lost`,
+  `stolen`, `retired`.
+- **Repair follow-up** for any asset: ticket, vendor (freetext - any repair
+  provider), sent / returned timestamps, notes.
+- **Excel / CSV import** for assets (any category) and agents, with
+  duplicate serial/IMEI detection and a downloadable conflict report.
+- **Excel exports**: filtered event log, plus a live inventory workbook with
+  summaries by type, status, department and category, a consumables stock
+  sheet and the full inventory.
+- **Reporting dashboard**: day / week / month / year, filterable by asset
+  type and department - KPIs, assets per type, per department, per category,
+  status distribution, activity trend, low-stock alerts (Recharts).
+- **Role-based access**: `admin`, `manager`, `staff`, plus a `pending` state
+  for SSO users awaiting approval.
+- **Authentication**:
+  - Local accounts (email + bcrypt password, JWT sessions).
+  - Optional **Microsoft Entra ID SSO** (OpenID Connect). MFA / Yubikey /
+    Authenticator is enforced by Microsoft Conditional Access.
+- **Multilingual UI**: English (default), French, Dutch.
+- **Full audit trail** of every event: create, check-out, check-in, status
+  change, repair send / return, stock issue / restock, import.
+
+## Tech stack
+
+| Layer     | Technology                                                    |
+|-----------|---------------------------------------------------------------|
+| Backend   | Node.js 20, Express 4                                         |
+| Database  | SQLite via `better-sqlite3` (WAL mode, foreign keys ON)       |
+| Auth      | `bcryptjs` + `jsonwebtoken`; `openid-client` for Entra ID SSO |
+| Frontend  | React 18, Vite 5, React Router 6                              |
+| Charts    | Recharts                                                      |
+| QR / XLSX | `html5-qrcode`, `xlsx` (SheetJS)                              |
+| i18n      | `i18next` + `react-i18next` + browser language detector       |
+| Packaging | Multi-stage Dockerfile, `docker-compose.yml`                  |
+
+---
+
+## Prerequisites
+
+See [PREREQUISITES.md](PREREQUISITES.md) for the complete list. Short version:
+
+- **Docker install**: Docker Engine 20+ (or Docker Desktop). Nothing else.
+- **Node install (no Docker)**: Node.js 20+, plus `python3`, `make`, `g++`
+  (Linux) or the Windows build tools - needed to compile `better-sqlite3`.
+- **HTTPS reverse proxy** in production (required by the QR camera API and by
+  Entra ID SSO redirect URIs).
+- **Entra ID SSO (optional)**: a Microsoft 365 tenant plus permission to
+  create an App registration.
+
+---
+
+## Quick start (Docker)
+
+```bash
+unzip phoenix-nexus.zip && cd phoenix-nexus
+cp .env.example .env
+# Edit .env - at minimum, set a strong JWT_SECRET
+# (generate one with:  openssl rand -hex 32 )
+
+docker compose up -d --build
+docker compose logs -f
+```
+
+Create the first admin (local account, always available as a break-glass
+login even when SSO is configured):
+
+```bash
+docker exec -it phoenix-nexus node scripts/first-admin.js \
+  admin@company.local "StrongPassword123!" "System Admin"
+```
+
+Open <http://localhost:8080> (or `http://<server-ip>:8080` on the LAN).
+
+For production deployment, reverse proxy, SSO, backups and troubleshooting,
+read [INSTALL.md](INSTALL.md).
+
+---
+
+## Documentation
+
+| File                                       | Audience              | Purpose                                                             |
+|--------------------------------------------|-----------------------|---------------------------------------------------------------------|
+| [README.md](README.md)                     | Everyone              | Overview and quick start (this file).                               |
+| [PREREQUISITES.md](PREREQUISITES.md)       | Ops / IT              | System, network and tenant requirements.                            |
+| [INSTALL.md](INSTALL.md)                   | Ops / IT              | Docker, Node direct, systemd, Windows/NSSM, Nginx/IIS.              |
+| [CONFIGURATION.md](CONFIGURATION.md)       | Ops / IT              | Every environment variable, SSO setup, tenant policies.             |
+| [ARCHITECTURE.md](ARCHITECTURE.md)         | Developers            | Code map, data model, request flow, extension points.               |
+| [API.md](API.md)                           | Developers            | REST endpoints, request/response shapes, auth model.                |
+| [CONTRIBUTING.md](CONTRIBUTING.md)         | Developers            | Local dev setup, coding conventions, PR checklist.                  |
+| [SECURITY.md](SECURITY.md)                 | Everyone              | Threat model, hardening checklist, reporting a vulnerability.       |
+| [CHANGELOG.md](CHANGELOG.md)               | Everyone              | Versioned change history.                                           |
+
+All documentation is in **English** to keep the project maintainable across
+teams. The **end-user UI** ships with EN / FR / NL translations.
+
+---
+
+## Project layout
+
+```text
+phoenix-nexus/
+├── Dockerfile              # Multi-stage build (Node builder + slim runtime)
+├── docker-compose.yml
+├── .env.example            # All configurable env vars, documented inline
+├── package.json            # Backend + frontend dependencies
+├── server/                 # Express backend
+│   ├── index.js            # Entry point, static + API mount
+│   ├── db.js               # SQLite schema + idempotent migrations
+│   ├── middleware/auth.js  # JWT sign/verify + role guards
+│   └── routes/             # auth, sso, users, agents, ptx, events, import
+├── client/                 # React frontend (built by Vite)
+│   ├── index.html
+│   ├── vite.config.js
+│   └── src/
+│       ├── main.jsx        # Router, i18n bootstrap
+│       ├── components/     # LanguageSwitcher, Layout, …
+│       ├── pages/          # Login, Scan, Inventory, Logs, Dashboard, Admin
+│       ├── lib/api.js      # Fetch helper with JWT + error handling
+│       └── i18n/           # en.json, fr.json, nl.json
+├── scripts/
+│   ├── first-admin.js      # CLI to create/reset the first admin
+│   └── backup.sh           # SQLite hot backup + 30-day retention
+└── data/                   # SQLite DB + backups (mounted volume)
+```
+
+---
+
+## Roadmap
+
+The Community / Pro split, our commitments and the planned work are in [ROADMAP.md](ROADMAP.md).
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) before starting work. Upgrading an existing installation: [UPGRADING.md](UPGRADING.md).
+
+---
+
+## License
+
+Phoenix-Nexus Community is free software under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only).
+
+- You can use, study, modify and self-host it, including inside a company, at no cost.
+- If you offer a modified version to users over a network (for example as a hosted service), the AGPL requires you to publish your modifications under the same licence.
+- A commercial licence and the **Phoenix-Nexus Pro** edition are available for organisations that cannot or do not want to comply with the AGPL. See [COMMERCIAL.md](COMMERCIAL.md).
+
+Copyright (C) 2026 Phoenix Tech MSP.
+
+---
+
+## Known limitations
+
+This is an alpha release (`2.0.0-alpha.1`). Be aware of the following before you rely on it:
+
+- **File import (`.xlsx`)** uses a library with a known vulnerability and no upstream fix. Imports are disabled on the public demo. In production, only import files you trust, or use the CSV import.
+- **Windows** installation scripts exist but are less tested than the Docker / Linux path.
+- **Barcode / QR scanning** with a camera is not covered by automated tests.
+- The SQLite database is a single file: plan backups (`scripts/backup.sh`) and use full-disk encryption on the host.

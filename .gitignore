@@ -1,0 +1,27 @@
+# Dependances et build
+node_modules/
+dist/
+.vite/
+
+# Secrets et configuration locale (seul .env.example est suivi)
+.env
+.env.local
+
+# Donnees d'execution : bases SQLite (et leurs fichiers WAL/SHM), sauvegardes, journaux
+data/
+backups/
+logs/
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.log
+
+# Divers
+.DS_Store
+__pycache__/
+*.pyc
+
+# Archives et pages enregistrees : ne jamais suivre
+*.zip
+/index.html*

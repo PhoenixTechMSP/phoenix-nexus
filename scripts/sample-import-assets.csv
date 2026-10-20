@@ -1,0 +1,18 @@
+asset_code,serial,category,department,status,quantity,min_quantity,label,location,notes
+IMP-LT-101,SNIMP1001,LAPTOP,IT,available,1,0,Dell Latitude 5440,Bureau IT,
+IMP-LT-102,SNIMP1002,LAPTOP,SALES,in_use,1,0,Dell Latitude 5440,,Attribué en déplacement
+IMP-DT-101,SNIMP1003,DESKTOP,HR,available,1,0,HP ProDesk 400,Bureau HR,
+IMP-MN-101,,MONITOR,IT,available,1,0,Dell 24p,Stock IT,
+IMP-MN-102,,MONITOR,IT,available,1,0,Dell 24p,Stock IT,
+IMP-PH-101,IMEIIMP501,PHONE,SALES,in_use,1,0,iPhone SE,,
+IMP-RD-101,,RADIO,OPS,available,1,0,Motorola DP2400,Local radio,
+IMP-RD-102,,RADIO,OPS,in_use,1,0,Motorola DP2400,,
+IMP-PTX-101,SNIMP2001,PTX / Handheld terminal,WH,available,1,0,,Quai 3,Catégorie donnée par nom plutôt que code - teste la résolution par alias
+IMP-PTX-102,SNIMP2002,PTX,WH,in_use,1,0,,,
+IMP-NET-101,,NETWORK,IT,in_use,1,0,Switch Cisco 24p,Local serveur,
+IMP-PLC-101,,PLC,MNT,in_use,1,0,Automate ligne 2,Atelier,
+IMP-VAC-101,,VACUUM,CLEAN,available,1,0,Karcher,Local technique,
+IMP-PPE-101,,PPE,GEN,available,60,25,Gants nitrile,Stock général,
+IMP-SUP-101,,SUPPLY,CLEAN,available,12,15,Produit sol,Local technique,Sous le seuil - teste l'alerte réappro
+IMP-LT-102,SNIMP9999,LAPTOP,IT,available,1,0,,,Code en double volontaire - teste le rejet doublon dans le même fichier
+IMP-TL-101,,CATEGORIE_INCONNUE,IT,available,1,0,,,Catégorie inconnue volontaire - teste le rejet
