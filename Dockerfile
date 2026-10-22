@@ -1,5 +1,5 @@
 # --- Build stage: compile React frontend ---
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json ./
@@ -8,7 +8,7 @@ COPY . .
 RUN npm run build
 
 # --- Runtime stage: minimal Node + SQLite ---
-FROM node:22-alpine AS runtime
+FROM node:25-alpine AS runtime
 WORKDIR /app
 RUN apk add --no-cache python3 make g++ && \
     addgroup -S ptx && adduser -S ptx -G ptx
