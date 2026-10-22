@@ -33,7 +33,7 @@ jobs:
       DEPLOY_URL: ${{ vars.DEPLOY_URL }}
       IMAGE: ${{ inputs.image }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
