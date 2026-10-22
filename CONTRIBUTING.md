@@ -1,162 +1,92 @@
 # Contributing
 
-Thank you for maintaining and extending Phoenix-Nexus. This guide keeps
-future changes coherent with the rest of the codebase.
+Thank you for helping with Phoenix-Nexus Community. Bug reports, test results, fixes and small features are all welcome.
 
----
+## What you can do
+
+| You want to | Do this |
+|---|---|
+| Try it and tell us what breaks | Run it ([README, Get started](README.md#get-started)), then open a **bug report** with the version, steps and logs (remove secrets) |
+| Report a security problem | **Do not open an issue.** See [SECURITY.md](SECURITY.md) |
+| Fix a bug | Fork, branch, fix, add a test, open a pull request (details below) |
+| Propose a feature | Open a **feature request** first, so we can agree on the scope before you write code |
+| Improve the docs or a translation | Pull request directly. Typos and wording are welcome |
+
+Pull requests are reviewed on a best-effort basis. Nobody pushes directly to `main`: every change goes through a pull request and a green CI.
+
+## Scope
+
+This repository is the Community edition (AGPL-3.0). We do not accept code for the paid Pro edition here, and we do not move a shipped Community feature out of Community ([ROADMAP.md](ROADMAP.md)). We do not add telemetry: an instance never sends data anywhere unless the administrator configures it.
 
 ## 1. Development setup
 
+Node.js 22 is required (see [PREREQUISITES.md](PREREQUISITES.md)).
+
 ```bash
-# Clone / extract the project
-cd phoenix-nexus
+git clone https://github.com/<your-fork>/phoenix-nexus.git && cd phoenix-nexus
+npm ci
 
-# Install dependencies (backend + frontend share package.json)
-npm install
+# Option A: the whole app with sample data in one command (Docker or Podman)
+docker run --rm -p 8080:8080 -e SEED_SAMPLE=1 $(docker build -q .)
+# the administrator email and password are printed once in the output
 
-# Copy env template
-cp .env.example .env
-# Edit .env - at minimum set JWT_SECRET. Keep SSO_ENABLED=false in dev.
-
-# Terminal 1 - API
-npm run dev:server        # Node --watch, port 8080
-
-# Terminal 2 - Frontend
-npm run dev:client        # Vite dev server, port 5173, proxies /api → :8080
-
-# Create a local admin
-node scripts/first-admin.js dev@local.test "dev12345" "Dev Admin"
+# Option B: hot reload
+cp .env.example .env   # set JWT_SECRET (openssl rand -hex 32)
+npm run dev:server     # API on :8080 (Node --watch)
+npm run dev:client     # Vite on :5173, proxies /api to :8080
+npm run first-admin -- dev@local.test 'a-long-password' 'Dev Admin'
 ```
 
-Open <http://localhost:5173>. The Vite proxy forwards every `/api/*` call
-to the backend at `:8080`, so both hot reload and API changes work.
+For a quick tour without an account of your own, run the demo setup: `DB_PATH=/tmp/nx.db DEMO_PASSWORD=demo12345 node scripts/demo-setup.js`, then start the server with `DEMO_MODE=1` and the same `DB_PATH` and `DEMO_PASSWORD`.
 
----
+## 2. Tests: required for every fix
 
-## 2. Conventions
-
-### Language
-
-- **All code, comments, commit messages, docs, and API contracts are in English.**
-- The UI supports EN / FR / NL translations via `client/src/i18n/`.
-  English (`en.json`) is the source of truth - add or rename keys there
-  first, then translate.
-
-### Backend
-
-- ES modules (`"type": "module"` in `package.json`) - use `import`/`export`.
-- Keep routers thin: validation → SQL → response. No ORM.
-- Use **prepared statements** (`db.prepare(...).run(...)`). Never concatenate
-  user input into SQL.
-- Wrap multi-statement changes in `db.transaction(() => { ... })()`.
-- Every mutation of `ptx` writes a row to `ptx_events` - the log must remain
-  the source of truth for reporting.
-
-### Frontend
-
-- Function components, hooks only. No class components.
-- Fetch through `client/src/lib/api.js` - it handles the JWT header and
-  error unwrapping.
-- Every user-visible string goes through `useTranslation()`. No hard-coded
-  labels in JSX.
-- Role-gated UI: check `user.role` from `localStorage.ptx_user` (parsed
-  once at layout mount).
-
-### Naming
-
-- Files: `kebab-case.js` for backend, `PascalCase.jsx` for React pages/components.
-- SQL identifiers: `snake_case`.
-- HTTP paths: `/api/<plural-noun>` for collections, `/:id/<verb>` for actions.
-
----
-
-## 3. Adding a feature - checklist
-
-1. **Design first**: sketch the API contract in [API.md](API.md).
-2. **Schema**: if new columns/tables are needed, add them in `server/db.js`
-   with an idempotent `CREATE TABLE IF NOT EXISTS` and, for existing tables,
-   an `ALTER TABLE` guarded by a `PRAGMA table_info` check (see the existing
-   migration block for the pattern).
-3. **Backend route**: add a router in `server/routes/`, mount it in
-   `server/index.js`. Apply `requireRole(...)` explicitly.
-4. **Frontend page/component**: use `lib/api.js`, gate by role, add i18n
-   keys.
-5. **Docs**: update [API.md](API.md), [ARCHITECTURE.md](ARCHITECTURE.md)
-   (if the flow changes), [CHANGELOG.md](CHANGELOG.md).
-6. **Manual test**: check-out and check-in flows must still work
-   end-to-end; run a fresh Docker build and start.
-7. **Backup compatibility**: restore a v1.x backup on top of the new
-   schema - migrations must be non-destructive.
-
----
-
-## 4. Database migrations
-
-The project keeps migrations **idempotent and in-code** rather than using a
-separate migration tool, so upgrades stay a `docker compose up -d --build`
-away. Pattern:
-
-```js
-const cols = db.prepare(`PRAGMA table_info(users)`).all().map(c => c.name);
-if (!cols.includes('language')) {
-  db.exec(`ALTER TABLE users ADD COLUMN language TEXT NOT NULL DEFAULT 'en'`);
-}
+```bash
+npm test               # server tests (API, security, migrations, first start, repository rules), no browser needed
+npm run build && npm run test:e2e   # browser scenarios (needs python3 and Playwright with Chromium)
+node scripts/smoke.mjs http://localhost:8080   # smoke test against a running instance
 ```
 
-Rules:
+- **A bug fix comes with a test that fails without the fix.** Check it: revert your fix and confirm the test fails.
+- Tests are hermetic: each one uses its own temporary database and a free port (see `server/test/helpers.js` and `clean-env.js`). Do not depend on your shell environment.
+- The CI runs the same commands on every pull request. It must be green.
 
-- **Additive only** across minor versions. Column drops require a major
-  version bump and a documented data migration.
-- New CHECK constraints on existing columns must be introduced by creating
-  a new table, copying data, dropping the old table, renaming - SQLite does
-  not support `ALTER TABLE … ADD CONSTRAINT`.
-- Never delete existing rows in a migration.
+## 3. Conventions
 
----
+- **Language**: code, comments, commit messages and API contracts are in English. The interface has English, French and Dutch (`client/src/i18n/`): add the key to `en.json` first, then translate `fr.json` and `nl.json` (flag empty translations in the pull request).
+- **Backend**: ES modules, thin routers (validation, SQL, response), no ORM, **prepared statements only** (never concatenate user input into SQL), `db.transaction(...)` for multi-statement changes, roles enforced with `requireRole(...)`.
+- **Frontend**: function components and hooks, fetch through `client/src/lib/api.js`, every visible string through `useTranslation()`. Colours come from the theme tokens in `client/src/styles.css` (no hard-coded light backgrounds: a test checks contrast in both themes).
+- **Audit trail**: every asset mutation writes a row to `asset_events`. The log is the source of truth for reporting.
+- **ITAM to CMDB** is one-way (see [ARCHITECTURE.md](ARCHITECTURE.md)). Do not write back from the CMDB to the inventory.
+- **No new external service** without discussion: one container and one SQLite file is a core property.
+- Naming: `kebab-case.js` (backend), `PascalCase.jsx` (React), `snake_case` (SQL), `/api/<plural-noun>` (HTTP).
 
-## 5. Testing
+## 4. Database changes
 
-The project ships without an automated test suite (intentional - keeps the
-runtime footprint tiny). Before releasing:
+Schema changes use **numbered migrations**: add `server/migrations/00N_name.js`, register it in `server/migrations/index.js` and add a test in `server/test/migrations.test.js`. Each migration runs in one transaction, after an automatic backup. Never edit a migration that has been released. Rules: additive across minor versions, never delete existing rows, and tables with new constraints are rebuilt (SQLite has no `ADD CONSTRAINT`). See [UPGRADING.md](UPGRADING.md).
 
-- Manual smoke test of every page (Login, Scan, Inventory, Logs, Dashboard,
-  Agents, Admin/Users, Admin/Import).
-- SSO login when `SSO_ENABLED=true`.
-- Excel import with a duplicate-IMEI file - confirm the conflict report.
-- Restore a backup taken on the previous version.
+## 5. Adding a feature: checklist
 
-Contributors are welcome to add a Vitest + Supertest suite; keep it in a
-top-level `tests/` folder and wire it to `npm test`.
+1. Agree on the scope in an issue. Sketch the API contract in [API.md](API.md).
+2. Migration if the schema changes (section 4).
+3. Backend route in `server/routes/`, mounted in `server/index.js`.
+4. Frontend page or component, with roles and translations.
+5. Tests (server, and a browser scenario if the user flow changes).
+6. Update `API.md`, `ARCHITECTURE.md` if the flow changes, and `CHANGELOG.md`.
 
----
+## 6. Pull request checklist
 
-## 6. Commit / PR checklist
+- [ ] `npm test` passes locally, and the new test fails without the change.
+- [ ] No secret, `.env` or database file is included (the repository tests fail if git tracks one).
+- [ ] Translations added in `en`, `fr` and `nl`.
+- [ ] `CHANGELOG.md` updated, documentation updated.
+- [ ] A fresh start works (`docker run ... -e SEED_SAMPLE=1`).
 
-- [ ] Code is in English (identifiers, comments, log messages).
-- [ ] i18n keys added to `en.json` **and** translated in `fr.json` /
-      `nl.json` (empty translations are acceptable if flagged in the PR).
-- [ ] `docker compose up -d --build` starts cleanly on a fresh volume.
-- [ ] `docker compose up -d --build` also starts cleanly on top of an
-      existing v1.x volume (migration path).
-- [ ] `CHANGELOG.md` updated.
-- [ ] `API.md` / `ARCHITECTURE.md` reflect any contract changes.
-- [ ] No new external service dependency without discussion - the "single
-      container, single file" property is a core value of the project.
+## 7. Releases
 
----
-
-## 7. Release process
-
-1. Bump `version` in `package.json` and image tag in `docker-compose.yml`.
-2. Update `CHANGELOG.md` with the release date and highlights.
-3. Tag: `git tag v1.x.y && git push --tags`.
-4. Publish the zip / tarball or Docker image per your organization's
-   distribution channel.
-
-
----
+Maintainers only: see [RELEASING.md](RELEASING.md).
 
 ## Licence of contributions
 
-Phoenix-Nexus Community is released under AGPL-3.0-only, and Phoenix Tech MSP also offers it under a commercial licence (see COMMERCIAL.md).
+Phoenix-Nexus Community is released under AGPL-3.0-only, and Phoenix Tech MSP also offers it under a commercial licence (see [COMMERCIAL.md](COMMERCIAL.md)).
 By opening a pull request you confirm that you wrote the code (or have the right to submit it) and you grant Phoenix Tech MSP the right to distribute your contribution under the AGPL-3.0 and under the commercial licence. If you cannot agree to this, open an issue instead and describe the change.

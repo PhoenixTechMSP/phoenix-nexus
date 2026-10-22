@@ -1,0 +1,3 @@
+# Relecteur automatique de toute pull request. Avec la protection de la branche main
+# ("Require review from Code Owners"), rien n est fusionne sans cette approbation.
+* @PhoenixTechMSP

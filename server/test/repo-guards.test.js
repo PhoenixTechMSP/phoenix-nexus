@@ -161,3 +161,13 @@ test('licence : AGPL-3.0 presente et coherente (LICENSE, package.json, README, f
   }
   assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'SECURITY.md'), 'utf8'), /internal IT security team\.\s*Do/, 'SECURITY.md sans contact public');
 });
+
+test('contribution : guide a jour (tests, migrations numerotees), CODEOWNERS et Dependabot presents', () => {
+  const c = fs.readFileSync(path.join(ROOT, 'CONTRIBUTING.md'), 'utf8');
+  assert.doesNotMatch(c, /ships without an automated test suite/i, 'CONTRIBUTING est perime : il existe une suite de tests');
+  assert.doesNotMatch(c, /ptx_events|selfhost/, 'noms perimes dans CONTRIBUTING');
+  for (const needle of ['npm test', 'server/migrations', 'SEED_SAMPLE=1', 'asset_events', 'RELEASING.md', 'SECURITY.md']) assert.ok(c.includes(needle), `CONTRIBUTING sans "${needle}"`);
+  assert.match(fs.readFileSync(path.join(ROOT, '.github', 'CODEOWNERS'), 'utf8'), /^\*\s+@\S+/m);
+  const d = fs.readFileSync(path.join(ROOT, '.github', 'dependabot.yml'), 'utf8');
+  for (const eco of ['npm', 'github-actions', 'docker']) assert.match(d, new RegExp(`package-ecosystem: ${eco}`));
+});
