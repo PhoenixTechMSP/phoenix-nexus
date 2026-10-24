@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="client/public/brand/phoenix-logo-on-dark.png">
-    <img src="client/public/brand/phoenix-logo.png" alt="Phoenix-Nexus logo" width="120">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/banner-dark.png">
+    <img src="docs/brand/banner-light.png" alt="Phoenix-Nexus: turn operational chaos into structured resilience" width="720">
   </picture>
 </p>
 

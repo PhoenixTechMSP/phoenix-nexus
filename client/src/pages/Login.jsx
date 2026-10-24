@@ -52,10 +52,10 @@ export default function Login() {
         <ThemeToggle />
       </div>
       <form onSubmit={submit}>
-        {/* Deux variantes : le rouge de marque n'atteint que 2,7:1 sur fond sombre, la variante claire 4,4:1 (voir styles.css) */}
+        {/* Deux variantes : sur fond sombre le coeur ardoise de la mascotte est eclairci (voir scripts/brand/make-assets.py) */}
         <div className="login-brand">
-          <img className="logo-on-light" src="/brand/phoenix-logo.png" alt="" width="80" height="80" />
-          <img className="logo-on-dark" src="/brand/phoenix-logo-on-dark.png" alt="" width="80" height="80" />
+          <img className="logo-on-light" src="/brand/phoenix-logo.png" alt="" width="96" height="96" />
+          <img className="logo-on-dark" src="/brand/phoenix-logo-on-dark.png" alt="" width="96" height="96" />
         </div>
         <h2>{t('login.title')}</h2>
         {ssoEnabled && (

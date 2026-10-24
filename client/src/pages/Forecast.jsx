@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api.js';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
+import BrandLoader from '../components/BrandLoader.jsx';
 
 const RANGES = [30, 60, 90, 180];
 
@@ -22,7 +23,7 @@ export default function Forecast() {
     api(`/events/forecast?${qs}`).then(setData).catch(() => {});
   }, [days, kind, deptId]);
 
-  if (!data) return <div className="card">{t('common.loading')}</div>;
+  if (!data) return <BrandLoader />;
 
   const weekdays = [0, 1, 2, 3, 4, 5, 6].map(w => ({
     weekday: w,

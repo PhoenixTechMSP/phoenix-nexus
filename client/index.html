@@ -6,9 +6,24 @@
     <title>Phoenix-Nexus</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="description" content="Gestion et suivi de flotte PTX en intranet" />
+    <style>
+      .boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f4f5f7; }
+      .boot img { animation: boot-pulse 1.6s ease-in-out infinite; }
+      @keyframes boot-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+      @media (prefers-color-scheme: dark) { .boot { background: #101012; } }
+      @media (prefers-reduced-motion: reduce) { .boot img { animation: none; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Ecran de demarrage : visible tant que le JavaScript charge, remplace par React au premier rendu -->
+      <div class="boot" role="status" aria-label="Phoenix-Nexus">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="/brand/phoenix-logo-on-dark.png" />
+          <img src="/brand/phoenix-logo.png" alt="" width="96" height="96" />
+        </picture>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

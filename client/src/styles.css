@@ -126,7 +126,7 @@ tr.selectable:hover td, tr.selectable.selected td { background: var(--surface-3)
 header h1.brand { display: flex; align-items: center; gap: 10px; }
 header .brand-mark { width: 32px; height: 32px; display: block; }
 .login-brand { display: flex; justify-content: center; margin-bottom: 4px; }
-.login-brand img { width: 80px; height: 80px; display: block; }
+.login-brand img { width: 96px; height: 96px; display: block; }
 .login-page h2 { text-align: center; } /* ne contient que le nom du produit : centre sous le logo */
 /* Le logo prend ~40 px dans l'en-tete : on resserre les espacements sur ecran moyen pour que l'en-tete
    tienne sur une seule ligne aussi large qu'avant (mesure : 1070 px, voir CHANGELOG). */
@@ -138,6 +138,16 @@ header .brand-mark { width: 32px; height: 32px; display: block; }
 .login-brand .logo-on-dark { display: none; }
 [data-theme="dark"] .login-brand .logo-on-light { display: none; }
 [data-theme="dark"] .login-brand .logo-on-dark { display: block; }
+
+/* Ecran de chargement */
+.brand-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 40vh; color: var(--text-muted); font-size: 14px; }
+.brand-loader.inline { min-height: 0; padding: 24px 0; }
+.brand-loader img { width: 72px; height: 72px; display: block; animation: brand-pulse 1.6s ease-in-out infinite; }
+.brand-loader .logo-on-dark { display: none; }
+[data-theme="dark"] .brand-loader .logo-on-light { display: none; }
+[data-theme="dark"] .brand-loader .logo-on-dark { display: block; }
+@keyframes brand-pulse { 0%, 100% { opacity: .55; transform: scale(.96); } 50% { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .brand-loader img { animation: none; } }
 
 /* Mode demonstration */
 .demo-banner { background: #fef3c7; color: #78350f; text-align: center; font-size: 13px; padding: 6px 12px; border-bottom: 1px solid #fcd34d; }

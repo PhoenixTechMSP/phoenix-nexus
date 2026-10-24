@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api.js';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
+import BrandLoader from '../components/BrandLoader.jsx';
 
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#a855f7', '#ef4444', '#64748b', '#0ea5e9'];
 const PERIODS = ['day', 'week', 'month', 'year'];
@@ -23,7 +24,7 @@ export default function Dashboard() {
     api(`/events/stats?${qs}`).then(setStats).catch(() => {});
   }, [period, kind, deptId]);
 
-  if (!stats) return <div className="card">{t('common.loading')}</div>;
+  if (!stats) return <BrandLoader />;
 
   const total = stats.totals.reduce((s, x) => s + x.n, 0);
   const get = (s) => stats.totals.find(x => x.status === s)?.n || 0;

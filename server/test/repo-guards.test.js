@@ -171,3 +171,22 @@ test('contribution : guide a jour (tests, migrations numerotees), CODEOWNERS et 
   const d = fs.readFileSync(path.join(ROOT, '.github', 'dependabot.yml'), 'utf8');
   for (const eco of ['npm', 'github-actions', 'docker']) assert.match(d, new RegExp(`package-ecosystem: ${eco}`));
 });
+
+test('marque : ecran de chargement (React + avant React) et logo present dans l\'interface', () => {
+  const html = read('client/index.html');
+  assert.match(html, /class="boot"/, 'ecran de demarrage manquant dans index.html');
+  assert.match(html, /\/brand\/phoenix-logo(-on-dark)?\.png/);
+  const loader = read('client/src/components/BrandLoader.jsx');
+  assert.match(loader, /phoenix-logo\.png/);
+  assert.match(loader, /phoenix-logo-on-dark\.png/);
+  for (const page of ['Dashboard', 'Forecast']) {
+    const src = read(`client/src/pages/${page}.jsx`);
+    assert.match(src, /<BrandLoader \/>/, `${page} doit afficher BrandLoader pendant le chargement`);
+    assert.doesNotMatch(src, /className="card">\{t\('common\.loading'\)\}/, `${page} affiche encore le texte brut`);
+  }
+  assert.ok(fs.existsSync(path.join(ROOT, 'scripts', 'brand', 'phoenix-mascot-source.png')), 'source de la mascotte absente');
+  for (const f of ['banner-dark', 'banner-light', 'social-preview']) {
+    const buf = fs.readFileSync(path.join(ROOT, 'docs', 'brand', f + '.png'));
+    assert.equal(buf.readUInt32BE(16), 1280); assert.equal(buf.readUInt32BE(20), 640);
+  }
+});

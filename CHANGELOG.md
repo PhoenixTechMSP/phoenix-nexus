@@ -1,7 +1,9 @@
 # Changelog
 
 ## 2.0.0-alpha.1 - Phoenix Nexus (ITAM + CMDB + SAM)
+
 ### Added
+- New brand: the colour phoenix mascot replaces the line logo in the header, the login page and the favicon. A loading screen (pulsing mascot) shows while the app starts and while the Dashboard and Forecast load. GitHub banners (light and dark) and the social preview image are in `docs/brand/`.
 - **Licence**: Community is released under AGPL-3.0-only (`LICENSE`), with a commercial licence available (`COMMERCIAL.md`).
   Community files: `CODE_OF_CONDUCT.md`, issue and pull request templates, private vulnerability reporting in `SECURITY.md`,
   public `ROADMAP.md` (Community / Pro split).
