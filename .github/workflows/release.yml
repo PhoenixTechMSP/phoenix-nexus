@@ -30,8 +30,10 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           PKG="$(node -p "require('./package.json').version")"
           [ "$VERSION" = "$PKG" ] || { echo "Tag $GITHUB_REF_NAME ne correspond pas a package.json ($PKG)"; exit 1; }
-          awk -v v="$VERSION" '$0 ~ "^## "{p=(index($0,"## " v " ")==1 || $0=="## " v)} p' CHANGELOG.md > release-notes.md
-          [ -s release-notes.md ] || { echo "Aucune section '## $VERSION' dans CHANGELOG.md"; exit 1; }
+          # Les notes sont ecrites HORS du depot : un fichier a la racine serait analyse par les tests (garde-fou de l'ancien nom).
+          NOTES="$RUNNER_TEMP/release-notes.md"
+          awk -v v="$VERSION" '$0 ~ "^## "{p=(index($0,"## " v " ")==1 || $0=="## " v)} p' CHANGELOG.md > "$NOTES"
+          [ -s "$NOTES" ] || { echo "Aucune section '## $VERSION' dans CHANGELOG.md"; exit 1; }
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - run: npm ci
@@ -44,7 +46,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: release-notes
-          path: release-notes.md
+          path: ${{ runner.temp }}/release-notes.md
 
   publish:
     needs: verify

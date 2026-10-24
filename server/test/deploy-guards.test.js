@@ -110,3 +110,12 @@ test('release : le tag doit correspondre a package.json, les notes viennent du C
   assert.ok(log.split('\n').some(l => l === `## ${pkg}` || l.startsWith(`## ${pkg} `)), `CHANGELOG sans section "## ${pkg}" : la release echouerait`);
   assert.ok(exists('RELEASING.md'));
 });
+
+// Constate au premier tag : le workflow ecrivait release-notes.md a la racine AVANT `npm test`, et le garde-fou de l'ancien nom
+// (qui parcourt le dossier de travail) rejetait ce fichier. Les notes doivent vivre hors du depot.
+test('release : les notes sont ecrites hors du depot (RUNNER_TEMP), pas dans le dossier analyse par les tests', () => {
+  const t = read(path.join('.github', 'workflows', 'release.yml'));
+  assert.match(t, /RUNNER_TEMP\/release-notes\.md/);
+  assert.match(t, /path:\s*\$\{\{ runner\.temp \}\}\/release-notes\.md/);
+  assert.doesNotMatch(t, /(^|[^>])>\s*(\.\/)?release-notes\.md\s*$/m, 'release-notes.md ne doit pas etre cree a la racine avant les tests');
+});
