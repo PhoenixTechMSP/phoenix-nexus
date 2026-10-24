@@ -2,6 +2,9 @@
 
 ## 2.0.0-alpha.1 - Phoenix Nexus (ITAM + CMDB + SAM)
 
+### Fixed
+- **Clean shutdown**: the server now handles SIGTERM and SIGINT (stops accepting connections, finishes in-flight requests, checkpoints and closes SQLite). Before, inside a container it ignored the stop signal and was killed after 10 s, which slowed every restart, deployment and rollback.
+
 ### Added
 - New brand: the colour phoenix mascot replaces the line logo in the header, the login page and the favicon. A loading screen (pulsing mascot) shows while the app starts and while the Dashboard and Forecast load. GitHub banners (light and dark) and the social preview image are in `docs/brand/`.
 - **Licence**: Community is released under AGPL-3.0-only (`LICENSE`), with a commercial licence available (`COMMERCIAL.md`).

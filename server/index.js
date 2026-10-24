@@ -69,5 +69,25 @@ export { app };
 // pour rendre l'app testable sans effet de bord au moment de l'import.
 if (isMainModule(import.meta.url)) {
   const PORT = process.env.PORT || 8080;
-  app.listen(PORT, () => console.log(`[server] Phoenix-Nexus on :${PORT}`));
+  const server = app.listen(PORT, () => console.log(`[server] Phoenix-Nexus on :${PORT}`));
+
+  // Arret propre. Dans un conteneur, node est le processus 1 : sans gestionnaire il ignore SIGTERM et Docker/Podman
+  // le tue de force apres 10 s (deploiements et retours arriere ralentis, base coupee en pleine ecriture).
+  // On cesse d'accepter des connexions, on laisse finir les requetes en cours, on ferme SQLite (checkpoint WAL).
+  let stopping = false;
+  const shutdown = (signal) => {
+    if (stopping) return;
+    stopping = true;
+    console.log(`[server] ${signal} recu : arret en cours`);
+    const force = setTimeout(() => { console.error('[server] arret force apres 8 s'); process.exit(1); }, 8000);
+    force.unref();
+    server.close(() => {
+      try { db.pragma('wal_checkpoint(TRUNCATE)'); db.close(); } catch (e) { console.error('[server] fermeture de la base :', e.message); }
+      console.log('[server] arret propre');
+      process.exit(0);
+    });
+    server.closeIdleConnections?.();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
