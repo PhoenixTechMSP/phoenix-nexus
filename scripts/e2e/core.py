@@ -26,7 +26,9 @@ with sync_playwright() as p:
     page.locator('.suggestions button').first.click()
     page.get_by_role('button', name=T['scan.confirmOut']).click()
     # Apres une action reussie la page VIDE volontairement la fiche (reset) pour scanner l'asset suivant et affiche un message.
-    page.wait_for_function("document.querySelector('main').innerText.includes('DEMO-LT-001')", timeout=8000)
+    # On attend la disparition du bouton de confirmation (la requete est terminee et la fiche videe). Attendre seulement
+    # que le texte "DEMO-LT-001" soit present ne prouve rien : la fiche l'affiche DEJA avant le clic (course constatee en CI).
+    page.wait_for_selector(f'button:has-text("{T["scan.confirmOut"]}")', state='detached', timeout=8000)
     C.check('scan : apres la sortie l\'asset est in_use (verifie en base)', api('/assets/lookup/DEMO-LT-001')['status'] == 'in_use')
     C.check('scan : un message de confirmation est affiche et la fiche est videe pour le scan suivant',
             page.locator(f'button:has-text("{T["scan.confirmOut"]}")').count() == 0)
