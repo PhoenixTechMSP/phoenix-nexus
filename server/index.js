@@ -57,6 +57,13 @@ const distPath = path.join(__dirname, '..', 'dist');
 app.use(express.static(distPath));
 app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
 
+// URL mal formee (ex. /%c0 envoye par les scanners d'Internet, des les premieres minutes d'une instance publique) : sans ce
+// gestionnaire Express repond avec la trace de l'erreur dans la reponse (hors production) et dans les journaux. On repond 400, sobrement.
+app.use((err, req, res, next) => {
+  if (err instanceof URIError) return res.status(400).type('text/plain').send('Bad request');
+  next(err);
+});
+
 // Rattrapage CMDB au demarrage (idempotent) : cree le CI des assets deja en
 // service avant l'arrivee du module CMDB - voir lib/cmdb-sync.js.
 const backfilled = backfillActiveAssets();

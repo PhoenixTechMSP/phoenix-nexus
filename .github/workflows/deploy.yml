@@ -60,10 +60,21 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: printf '%s\n' "$GHCR_TOKEN" | ssh -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" "GHCR_USER='${GHCR_USER}' bash /opt/nexus/deploy/remote-deploy.sh '${IMAGE}'"
 
+      # Au tout premier deploiement, Caddy obtient le certificat HTTPS APRES le demarrage du conteneur (une a deux minutes).
+      # Sans cette attente, le test de fumee tombait sur une erreur TLS et declenchait un retour arriere inutile.
+      - name: Wait for the public URL (HTTPS certificate on a first deployment)
+        run: |
+          for i in $(seq 1 36); do
+            if curl -fsS --max-time 10 "$DEPLOY_URL/api/health" >/dev/null 2>&1; then echo "URL publique prete (essai $i)"; exit 0; fi
+            echo "essai $i/36 : pas encore joignable en HTTPS"; sleep 5
+          done
+          echo "L'URL publique ne repond pas apres 3 minutes : $DEPLOY_URL" >&2; exit 1
+
       - name: Smoke test against the live URL
         id: smoke
         run: node scripts/smoke.mjs "$DEPLOY_URL"
 
       - name: Roll back if the smoke test failed
         if: failure() && steps.smoke.conclusion == 'failure'
-        run: ssh -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" "bash /opt/nexus/deploy/remote-deploy.sh rollback"
+        run: |
+          ssh -i "$HOME/.ssh/deploy_key" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" "bash /opt/nexus/deploy/remote-deploy.sh rollback" || echo "Retour arriere impossible (aucune image precedente), premiere version deployee, rien a restaurer."

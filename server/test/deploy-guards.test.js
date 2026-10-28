@@ -119,3 +119,12 @@ test('release : les notes sont ecrites hors du depot (RUNNER_TEMP), pas dans le 
   assert.match(t, /path:\s*\$\{\{ runner\.temp \}\}\/release-notes\.md/);
   assert.doesNotMatch(t, /(^|[^>])>\s*(\.\/)?release-notes\.md\s*$/m, 'release-notes.md ne doit pas etre cree a la racine avant les tests');
 });
+
+// Constate au premier deploiement : le test de fumee tournait avant que Caddy ait obtenu le certificat HTTPS.
+test('deploiement : on attend l\'URL publique avant le test de fumee, et un retour arriere impossible ne masque pas l\'erreur', () => {
+  const dep = read(path.join('.github', 'workflows', 'deploy.yml'));
+  const wait = dep.indexOf('Wait for the public URL'), smoke = dep.indexOf('Smoke test against the live URL');
+  assert.ok(wait > 0 && wait < smoke, 'l\'attente de l\'URL doit preceder le test de fumee');
+  assert.match(dep, /\/api\/health/);
+  assert.match(dep, /remote-deploy\.sh rollback"\s*\|\|\s*echo/, 'rollback sans image precedente : ne pas echouer en plus');
+});
