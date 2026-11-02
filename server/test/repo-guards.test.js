@@ -202,3 +202,10 @@ test('README : chaque image de docs/ referencee existe (captures, bannieres) et 
   }
   for (const shot of ['dashboard', 'inventory', 'cmdb', 'sam']) assert.ok(refs.includes(`docs/screenshots/${shot}.png`), `capture ${shot} non referencee dans le README`);
 });
+
+test('annonce : aucune mention de l\'edition Pro ni de Paddle dans les documents publics (Community seulement)', () => {
+  for (const f of ['README.md', 'ROADMAP.md', 'COMMERCIAL.md', 'CONTRIBUTING.md', 'SECURITY.md']) {
+    const t = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    assert.doesNotMatch(t, /\bPro (edition|features?)\b|Phoenix-Nexus Pro|\bpaddle\b|open-core/i, `${f} parle de l'edition Pro`);
+  }
+});

@@ -16,7 +16,7 @@ Pull requests are reviewed on a best-effort basis. Nobody pushes directly to `ma
 
 ## Scope
 
-This repository is the Community edition (AGPL-3.0). We do not accept code for the paid Pro edition here, and we do not move a shipped Community feature out of Community ([ROADMAP.md](ROADMAP.md)). We do not add telemetry: an instance never sends data anywhere unless the administrator configures it.
+This repository is the Community edition (AGPL-3.0). We do not move a shipped Community feature out of Community ([ROADMAP.md](ROADMAP.md)). We do not add telemetry: an instance never sends data anywhere unless the administrator configures it.
 
 ## 1. Development setup
 

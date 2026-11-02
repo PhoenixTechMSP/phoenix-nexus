@@ -232,7 +232,7 @@ phoenix-nexus/
 
 ## Roadmap
 
-The Community / Pro split, our commitments and the planned work are in [ROADMAP.md](ROADMAP.md).
+Our commitments and the planned work are in [ROADMAP.md](ROADMAP.md).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before starting work. Upgrading an existing installation: [UPGRADING.md](UPGRADING.md).
 
@@ -244,7 +244,7 @@ Phoenix-Nexus Community is free software under the [GNU Affero General Public Li
 
 - You can use, study, modify and self-host it, including inside a company, at no cost.
 - If you offer a modified version to users over a network (for example as a hosted service), the AGPL requires you to publish your modifications under the same licence.
-- A commercial licence and the **Phoenix-Nexus Pro** edition are available for organisations that cannot or do not want to comply with the AGPL. See [COMMERCIAL.md](COMMERCIAL.md).
+- A commercial licence is available for organisations that cannot or do not want to comply with the AGPL. See [COMMERCIAL.md](COMMERCIAL.md).
 
 Copyright (C) 2026 Phoenix Tech MSP.
 

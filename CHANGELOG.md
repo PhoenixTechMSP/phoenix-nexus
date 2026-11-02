@@ -9,7 +9,7 @@
 - New brand: the colour phoenix mascot replaces the line logo in the header, the login page and the favicon. A loading screen (pulsing mascot) shows while the app starts and while the Dashboard and Forecast load. GitHub banners (light and dark) and the social preview image are in `docs/brand/`.
 - **Licence**: Community is released under AGPL-3.0-only (`LICENSE`), with a commercial licence available (`COMMERCIAL.md`).
   Community files: `CODE_OF_CONDUCT.md`, issue and pull request templates, private vulnerability reporting in `SECURITY.md`,
-  public `ROADMAP.md` (Community / Pro split).
+  public `ROADMAP.md`.
 - **Numbered database migrations** with an automatic backup before each upgrade (`ptx.db.pre-v<N>-<date>.bak`, last 5 kept),
   one transaction per migration, and a refusal to start on a database newer than the application. See `UPGRADING.md`.
 - **CI/CD** (`deploy/CICD.md`): `develop` deploys to UAT, `main` to production after manual approval, image published to
