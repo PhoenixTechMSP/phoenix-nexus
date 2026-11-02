@@ -5,6 +5,13 @@
   </picture>
 </p>
 
+<p align="center">
+  <a href="https://github.com/PhoenixTechMSP/phoenix-nexus/actions/workflows/ci.yml"><img src="https://github.com/PhoenixTechMSP/phoenix-nexus/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/PhoenixTechMSP/phoenix-nexus/releases"><img src="https://img.shields.io/github/v/release/PhoenixTechMSP/phoenix-nexus?include_prereleases&label=release" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0-blue" alt="Licence AGPL-3.0"></a>
+  <a href="https://demo.phoenix-tech.be"><img src="https://img.shields.io/badge/live%20demo-demo.phoenix--tech.be-e11d2e" alt="Live demo"></a>
+</p>
+
 <h1 align="center">Phoenix-Nexus</h1>
 
 Self-hosted IT governance platform with three modules on one database:
@@ -25,6 +32,17 @@ in which state, plus repair follow-up and consumable stock levels.
 
 Designed to run **fully offline on your intranet** - no cloud dependency,
 one container, one SQLite file.
+
+## Screenshots
+
+Taken on the [live demo](https://demo.phoenix-tech.be) (fictional data, reset every night).
+
+| | |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Inventory](docs/screenshots/inventory.png) |
+| **Dashboard**: fleet status, events and forecast | **Inventory**: IT, OT and business equipment, stock alerts |
+| ![CMDB](docs/screenshots/cmdb.png) | ![SAM](docs/screenshots/sam.png) |
+| **CMDB**: configuration items and relationships | **SAM**: licence position, savings and renewals |
 
 ---
 

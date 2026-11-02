@@ -190,3 +190,15 @@ test('marque : ecran de chargement (React + avant React) et logo present dans l\
     assert.equal(buf.readUInt32BE(16), 1280); assert.equal(buf.readUInt32BE(20), 640);
   }
 });
+
+test('README : chaque image de docs/ referencee existe (captures, bannieres) et reste legere', () => {
+  const readme = read('README.md');
+  const refs = [...readme.matchAll(/(?:src|srcset)="(docs\/[\w./-]+\.png)"|\]\((docs\/[\w./-]+\.png)\)/g)].map(m => m[1] || m[2]);
+  assert.ok(refs.length >= 6, `au moins 6 images attendues (2 bannieres, 4 captures), trouvees : ${refs.length}`);
+  for (const ref of new Set(refs)) {
+    const file = path.join(ROOT, ref);
+    assert.ok(fs.existsSync(file), `image du README absente : ${ref}`);
+    assert.ok(fs.statSync(file).size < 300 * 1024, `${ref} depasse 300 Ko`);
+  }
+  for (const shot of ['dashboard', 'inventory', 'cmdb', 'sam']) assert.ok(refs.includes(`docs/screenshots/${shot}.png`), `capture ${shot} non referencee dans le README`);
+});
